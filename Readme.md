@@ -1,6 +1,10 @@
 
 # SAM
 SAM is available here https://github.com/facebookresearch/segment-anything
+Pape uses mobileSAM that is available here
+to install it via pip install git+https://github.com/ChaoningZhang/MobileSAM.git
+weights are available here https://github.com/ChaoningZhang/MobileSAM?tab=readme-ov-file
+
 
 # UnirepLKNET Model
 The UnirepLKNET model is available here https://github.com/AILab-CVC/UniRepLKNet
