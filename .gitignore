@@ -2,6 +2,7 @@
 
 # ignoring data folder 
 /data 
+.weight
 
 .DS_Store
 .AppleDouble
