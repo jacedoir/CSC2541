@@ -7,15 +7,18 @@ from UniRepLKNetSmall import UniRepLKNetSmall
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
+elif torch.backends.mps. is_available():
+    device = torch. device ("mps")
 else:
     device = torch.device("cpu")
+print(f"Device: {device}")
 
 # === Define SAM Encoder ===
 class SAMEncoder(nn.Module):
     def __init__(self, device):
         super(SAMEncoder, self).__init__()
         self.model_type = "vit_t"
-        self.sam_checkpoint = "./weights/mobile_sam.pt"
+        self.sam_checkpoint = ".weight/mobile_sam.pt"
 
         self.device = device
 
@@ -35,6 +38,7 @@ class SAMEncoder(nn.Module):
 # === Define G Encoder (UniRepLKNet) ===
 class GEncoder(nn.Module):
     def __init__(self, device):
+        super(GEncoder, self).__init__()
         self.device = device
         self.model = UniRepLKNetSmall(in_channels=3, base_channels=96)
         self.model.to(device=self.device)
@@ -90,7 +94,7 @@ class CNNDeconvBlock(nn.Module):
         return self.relu(self.bn(upsampled))
 
 class GDDecoder(nn.Module):
-    def __init__(self, base_channels):
+    def __init__(self, base_channels, device):
         super(GDDecoder, self).__init__()
         
         # BSAM and upsampling modules for each level of decoding
@@ -223,11 +227,11 @@ class LossFunctions(nn.Module):
 
 # === Full AerialIRGAN Model ===
 class AerialIRGAN(nn.Module):
-    def __init__(self):
+    def __init__(self, device):
         super(AerialIRGAN, self).__init__()
         self.sam_encoder = SAMEncoder(device)
         self.g_encoder = GEncoder(device)
-        self.decoder = GDDecoder(device)
+        self.decoder = GDDecoder(base_channels=3 ,device=device)
 
     def forward(self, x):
         x_sam = self.sam_encoder(x)
@@ -236,9 +240,9 @@ class AerialIRGAN(nn.Module):
         return out
 
 # === Training Loop ===
-def train():
-    generator = AerialIRGAN()
-    discriminator = PatchGANDiscriminator()
+def train(device, epochs=5, dataloader=None):
+    generator = AerialIRGAN(device)
+    discriminator = PatchGANDiscriminator(input_channels=3)
     optimizer_G = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     optimizer_D = optim.Adam(discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     sac_loss = LossFunctions()
@@ -264,4 +268,4 @@ def train():
             optimizer_D.step()
 
 # Run the training process
-train()
+train(device)
